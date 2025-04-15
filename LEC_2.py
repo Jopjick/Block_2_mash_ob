@@ -1,232 +1,146 @@
+## Линейная регрссия
+## Задача - на основе наблюдаемых точек построить прямую, которая отображает связь между двумя или более перемнными
+# Регрессия пытается "подогнать" функцию к наблюдаемым данным, чтобы спрогнощировать новые данные
+# Линейная регрессия подгоняет данные к прямой линии, пытаемся установить линейную связь между перемнными и предскахать новые данные
+
 import numpy as np
+from sklearn.datasets import make_regression
+from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
-
-## Суммирование значений (и другие агрегатные функции)
-
-# rng = np.random.default_rng(1)
-# s = rng.random(50)
-
-# print(s)
-# print(sum(s))
-# print(np.sum(s))
-
-# a = np.array([[1,2,3,4,5],
-#              [6,7,8,9,10]])
-
-# print(np.sum(a))
-# print(np.sum(a, axis=0))
-# print(np.sum(a, axis=1))
-
-# print()
-
-# print(np.min(a))
-# print(np.min(a, axis=0))
-# print(np.min(a, axis=1))
-
-# print()
-
-# print(a.min())
-# print(a.min(0))
-# print(a.min(1))
-
-# print()
-
-# # NaN = Not a Number
-# print(np.nanmin(a))
-# print(np.nanmin(a, axis=0))
-# print(np.nanmin(a, axis=1))
-
-## Транслирование (broadcasting)
-## Некоторый набор правил, которы епозволяют осуществять бинарные операции с массивами разных форм и размеров
-
-# a = np.array([0, 1, 2])
-# b = np.array([5, 5, 5])
-
-# print(a + b)
-# print(a + 5) # "5" транслируется в [5,5,5], т. е. она подстраивается под размер массива a
-
-# a = np.array([[0, 1, 2],
-#               [3, 4, 5]])
-# print(a + 5)
-
-# a = np.array([0, 1, 2])
-# b = np.array([[0], [1], [2]])
-# print(a+b)
-
-# Правила
-# 1) Если рамерности массивов отличаются, то форма массива с меньшей размерностью дополняется 1 с левой стороны (ndim)
-# 2) Если формы массивов отличаются в каком-то измерении, то если у массива форма равна 1, он "растягивается" до соответсвия формы  (shape)
-# 3) Если после применения 1) и 2) в каком-либо измерении размеры отличаются и ни один из них не равен 1, тогда транслирование невозможно, генерируется ошибка
-
-# a = np.array([[0,1,2], [3,4,5]])
-# b = np.array([5])
-
-# # print(a.ndim, a.shape)
-# # print(b.ndim, b.shape)
-
-# # a         (2,3)
-# # b (1,) -> (1,1) -> (2,3)
-
-# # print(a+b)
+from numpy.linalg import inv, qr
+import random
 
 
-# a = np.ones((2,3))
-# b = np.arange(3)
+# features, target = make_regression(n_samples = 200, n_features = 1, n_informative = 1, n_targets = 1, noise = 20, random_state = 1)
 
-# print(a)
-# print(b)
+# print(features.shape)
 
-# print(a.ndim, a.shape)
-# print(b.ndim, b.shape)
+# model = LinearRegression().fit(features, target)
 
-# # (2,3)   (2,3)    (2,3)
-# # (3,) -> (1,3) -> (2,3)
+# plt.scatter(features, target)
 
-# c = a + b
+# x = np.linspace(features.min(), features.max(), 100)
 
-# print(c, c.shape)
+# plt.plot(x, model.coef_[0]*x + model.intercept_, color='orange')
 
-# a = np.arange(3).reshape(3,1)
-# b = np.arange(3)
-
-# print(a, b, sep='\n')
-
-# # (3,1)   (1,3) -> (3,3)
-# # (3,) -> (1,3) -> (3,3)
-
-# c = a + b
-
-# # [0, 0, 0]   [0, 1, 2]
-# # [1, 1, 1] + [0, 1, 2]
-# # [2, 2, 2]   [0, 1, 2]
-
-# print(c, c.shape)
-
-# a = np.ones((3,2))
-# b = np.arange(3)
-
-# # 2 (3,2)    (3,2)    (3,2) -> ошибка
-# # 1 (3,)  -> (1,3) -> (3,3)
-
-# try:
-#     c = a + b
-# except Exception as err:
-#     print(err)
-
-## Q1: Что надо оизменить в последнем примере, чтобы он работал без ошибок?
-
-# Центрирование массива
-# X = np.array([[1,2,3,4,5,6,7,8,9],
-#               [9,8,7,6,5,4,3,2,1]])
-
-# X_mean0 = X.mean(0)
-# print(X_mean0)
-
-# X_center0 = X - X_mean0
-# print(X_center0)
-
-# X_mean1 = X.mean(1)
-# print(X_mean1)
-
-# X_mean1 = X_mean1[:, np.newaxis]
-
-# X_center1 = X - X_mean1
-# print(X_center1)
-
-# x = np.linspace(0, 5, 50)
-# y = np.linspace(0, 5, 50)[:, np.newaxis]
-
-# z = np.sin(x)**3 + np.cos(20 + y*x) * np.sin(y)
-
-# plt.imshow(z)
-# plt.colorbar()
 # plt.show()
 
-# x = np.array([1,2,3,4,5])
-# y = np.array([[1,2,3,4,5],
-#             [6,7,8,9,10]])
-# print(x < 3)
-# print(np.less(x,3))
 
-# # False = 0
-# # True = 1
+# Простая линейная регрессия
+# Линейная -> линейная зависимость
+# + :
+# Прогнозирование на новых данных
+# Анализ взамного влияния переменных друг на друга
+# -:
+# Точки обучаемых данных не будут лежать на прямой (шум) - область погрешности
+# Не позволяет делать прогнозы вне диапазона имеющихся данных
 
-# print(np.sum(x < 3)) # количество элементов
-# print(np.sum(y < 4)) # количество элементов
-# print(np.sum(y < 4, axis = 0)) # количество элементов
-# print(np.sum(y < 4, axis = 1)) # количество элементов
+# Данные, на основании которых разрабатывается модель - выборка из некоторой мовокупности
+# Хотелось бы, чтобы это была репрезентативная выборка
 
-# & | ^ - -- побитовые операции
+data = np.array(
+    [
+        [1, 5],
+        [2, 7],
+        [3, 7],
+        [4, 10],
+        [5, 11],
+        [6, 14],
+        [7, 17],
+        [8, 19],
+        [9, 22],
+        [10, 28]
+    ]
+)
 
-## Q2: Пример для y. Вычислить количество элементов по обоим размерностям, значения которых больше 3 и меньше 5
+x = data[:,0]
+y = data[:,1]
+n = len(x)
 
-## Маски - булевы массивы
+# Метод наименьших квадратов
 
-# x = np.array([1,2,3,4,5])
-# print(x < 3)
+# w_1 = n*sum(x[i]*y[i] for i in range(n)) - sum(num for num in x)*sum(num for num in y) 
+# w_1 /= ( n*(sum(num**2 for num in x)) - sum(num for num in x)**2 )
 
-# y = x[x < 3]
-# print(y)
+# w_0 = sum(num for num in y)/n - w_1*sum(num for num in x)/n
 
-# print(bin(42))
-# print(bin(59))
-# print(bin(42 & 59))
+# # plt.scatter(x,y)
+# # plt.plot(x, w_1*x + w_0, linestyle = '--')
 
-## Векторизация индекса
+# # plt.show()
 
-# x = np.array([1,2,3,4,5,6,7,8,9])
+# # Метод обратных матриц
 
-# index = [1,5,7]
-# print(x[index])
+# x_1 = np.vstack([x, np.ones(len(x))]).T
+# w = inv(x_1.transpose() @ x_1 ) @ (x_1.transpose() @ y)
 
-# index = [[1,5,7],
-#         [2,4,8]]
+# print(w)
+# print(w_1, w_0)
 
-# print(x[index])
+# # Разложение матриц (QR)
 
-## Форма результата отражает форму массива индексов, а не форму исходного массива
+# Q, R = qr(x_1)
+# w = (inv(R) @ Q.T) @ y
+# print(w)
 
-# x = np.arange(12).reshape((3,4))
+# Градиентный спуск (метод оптимизации)
 
-# print(x)
+# def f(x):
+#     return 0.1*(x-3)**2 - 4
 
-# print(x[2])
-# print(x[2, [2,0,1]])
-# print()
+# def df(x):
+#     return 0.2*x - 0.6
 
-# print(x[1:, [2,0,1]])
+# x = np.linspace(-10,10, 1000)
 
-# x = np.arange(10)
-# i = np.array([2,1,8,4])
+# L = 0.01
+# iterations = 100_000
 
-# print(x)
+# t = np.random.randint(0,5)
 
-# x[i] = 999
-# print(x)
+# for i in range(iterations):
+#     dx = df(t)
+#     t -= L*dx
 
-## Сортировка массивов
+# print(t)
 
-# x = [3,2,5,6,3,2,4,7,9,6,6,4,2,1,5,8,9]
+# ax = plt.gca()
 
-# print(sorted(x))
-# print(np.sort(x))
+# ax.xaxis.set_major_locator(plt.MultipleLocator(1))
+# plt.grid()
+# # plt.plot(x, f(x))
+# # plt.plot(x, df(x))
 
-## Структурированные массивы
+# plt.show()
 
-# data = np.zeros(4, dtype = {'names':('name', 'age'),
-#                             'formats': ('U10', 'i4')})
 
-# name = ['name1', 'name2', 'name3', 'name4']
-# age = [10, 20, 30, 40]
+# Линейная регрессия
 
-# data['name'] = name
-# data['age'] = age
+# x = data[:,0]
+# y = data[:,1]
+# n = len(x)
+# w1, w0 = 0, 0
+# L = 0.00001
+# iterations = 100
+# for i in range(iterations):
+#     D_w0 = 2 * sum(y[i] - w0 - w1*x[i] for i in range(n))
+#     D_w1 = 2 * sum(x[i] * (-y[i] - w0 - w1*x[i]) for i in range(n))
+#     w0 -= L*D_w0
+#     w1 -= L*D_w1
 
-# print(data[data['age'] > 20])
+# print(w1, w0)
 
-# ## Массивы записей
+W1 = np.linspace(-10, 10, 100)
+W0 = np.linspace(-10, 10, 100)
 
-# data_rec = data.view(np.recarray)
-# print(data_rec)
-# print(data_rec[0])
-# print(data_rec[-1].name)
+def E(w1,w0, x, y):
+    n = len(x)
+    return sum((y[i] - (w0 + w1 * x[i]))**2 for i in range(n))
+
+EW = E(W1, W0, x, y)
+print(EW)
+fig = plt.figure()
+ax = plt.axes(projection='3d')
+# ax.plot_surface(W1, W0, EW)
+
+plt.show()
